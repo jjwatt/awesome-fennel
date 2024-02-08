@@ -561,3 +561,7 @@ end)
 client.connect_signal("mouse::enter", function(c)
     c:activate { context = "mouse_enter", raise = false }
 end)
+
+local fennel = require("./fennel").install()
+fennel.path = fennel.path .. ";.config/awesome/?.fnl"
+fnlisloaded = require("fnlrc")
