@@ -39,7 +39,7 @@ end)
 beautiful.init("/home/jwattenb/.config/awesome/themes/default/theme.lua")
 -- This is used later as the default terminal and editor to run.
 terminal = "kitty"
-editor = os.getenv("EDITOR") or "nano"
+editor = os.getenv("EDITOR") or "emacsclient -c"
 editor_cmd = terminal .. " -e " .. editor
 
 -- Default modkey.
