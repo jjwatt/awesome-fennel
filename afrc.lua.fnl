@@ -20,14 +20,21 @@
 
 (require :awful.hotkeys_popup.keys)
 
-(naughty.connect_signal "request::display_error"
-                        (fn [message startup]
-                          (naughty.notification {: message
-                                                 :title (.. "Oops, an error happened"
-                                                            (or (and startup
-                                                                     " during startup!")
-                                                                "!"))
-                                                 :urgency :critical})))
+;; (naughty.connect_signal "request::display_error"
+;;                         (fn [message startup]
+;;                           (naughty.notification {: message
+;;                                                  :title (.. "Oops, an error happened"
+;;                                                             (or (and startup
+;;                                                                      " during startup!")
+;;                                                                 "!"))
+;;                                                  :urgency :critical})))
+(let [signal "request::display_error"]
+  (fn [message startup]
+    (naughty.notification {: message
+                           :title (.. "Oops, an error happened"
+                                      (or (and startup "during startup!")
+                                          "!"))
+                           :urgency :critical})))
 
 (beautiful.init :/home/jwattenb/.config/awesome/themes/default/theme.lua)
 
