@@ -1,0 +1,155 @@
+* Fennel Notes
+
+** Incremental Reading
+https://fennel-lang.org/from-clojure#macros
+
+Fennel and Lua are minimalist languages, and Clojure is not.
+
+Runtime
+
+However, Fennel's symbiosis goes beyond that of Clojure. Clojure
+functions are distinct from Java methods.
+
+In Fennel you don't have such distinctions. Every Fennel function is
+indistinguishable from a Lua function, and every Fennel module is
+indistinguishable from a Lua module.
+
+https://fennel-lang.org/macros#identifiers-and-gensym
+
+These macros cannot be exported as part of the module, but the
+import-macros form lets you write a macro module containing macros
+which can be re-used anywhere.
+
+A macro module is just like any other module: it contains function
+definitions and ends with a table containing just the functions which
+are exported.
+
+The only difference is that the entire macro module is loaded in the
+compiler environment.
+
+This is how it has access to functions like list, sym, etc. For a full
+list of functions available, see the "Compiler Environment" section of
+the reference.
+"Compiler Environment"
+
+https://fennel-lang.org/from-clojure#macros
+
+Clojure runs on the JVM, but it also has its own standard library: the
+clojure.core namespace as well as supplemental ones like clojure.set
+or clojure.java.io provide more functions.
+
+In Fennel, there are no functions whatsoever provided by the language;
+it only provides macros and special forms.
+
+Since the Lua standard library is quite minimal, it's common to pull
+in 3rd-party things like Lume, LuaFun, or Penlight for things you
+might expect to be built-in to the language, like merge or
+keys.
+
+There's also an experimental Cljlib library, that implements a
+lot of functions from clojure.core namespace, and has a set of macros
+to make writing code more familiar to Clojure programmers, like adding
+syntax for defining multi-arity functions, or multimethods, also
+providing deep comparison semantics, sequence abstraction, and some
+addition data structures, like sets.
+
+In Clojure it's typical to bring in libraries using a tool like
+Leiningen. In Fennel you can use LuaRocks for dependencies, but it's
+often overkill.
+  - Usually it's better to just check your dependencies
+    into your source repository.
+
+Fennel deployments are much more varied; you can easily create
+self-contained standalone executables that are under a megabyte, or
+you can create scripts which rely on an existing Lua install, or code
+which gets embedded inside a larger application where the VM is
+already present.
+
+Functions and locals
+
+Clojure has two types of scoping: locals and vars.
+
+Fennel uses lexical scope for everything.
+
+(Globals exist, but they're mostly used for debugging and repl
+purposes; you don't use them in normal code.)
+
+This means that the "unit of reloading" is module. Fennel's repl
+includes a ,reload module-name command for this. Inside functions, let
+is used to introduce new locals just like in Clojure. But at the
+top-level, local is used, which declares a local which is valid for
+the entire remaining chunk instead of just for the body of the let.
+
+https://fennel-lang.org/reference#compiler-environment
+
+Compiler Environment
+
+Inside eval-compiler, macros, or macro blocks, as well as
+import-macros modules, the functions listed below are visible to your
+code.
+
+    list - return a list, which is a special kind of table used for code.
+
+    sym - turn a string into a symbol.
+
+    gensym - generates a unique symbol for use in macros, accepts an optional prefix string.
+
+    list? - is the argument a list? Returns the argument or false.
+
+    sym? - is the argument a symbol? Returns the argument or false.
+
+    table? - is the argument a non-list table? Returns the argument or false.
+
+    sequence? - is the argument a non-list sequential table (created with [], as opposed to {})? Returns the argument or false.
+
+    varg? - is this a ... symbol which indicates var args? Returns a special table describing the type or false.
+
+    multi-sym? - a multi-sym is a dotted symbol which refers to a table's field. Returns a table containing each separate symbol, or false.
+
+    comment? - is the argument a comment? Comments are only included when opts.comments is truthy.
+
+    view - fennel.view table serializer.
+
+    get-scope - return the scope table for the current macro call site.
+
+    assert-compile - works like assert but takes a list/symbol as its third argument in order to provide pinpointed error messages.
+
+These functions can be used from within macros only, not from any eval-compiler call:
+
+    in-scope? - does the symbol refer to an in-scope local? Returns the symbol or nil.
+    macroexpand - performs macroexpansion on its argument form; returns an AST.
+
+#+begin_src fennel
+      (let [body (list f (unpack args))]
+      (table.insert body _VARARG)
+      ;; only use the extra let if we need double-eval protection
+      (if (= nil (. bindings 1))
+          `(fn [,_VARARG] ,body)
+          `(let ,bindings
+             (fn [,_VARARG] ,body))))))
+#+end_src
+
+https://fennel-lang.org/macros#identifiers-and-gensym
+
+If you want your macroexpanded code to call a function your library
+provides in a module, you may at first accidentally write a sloppy
+version of your macro which only works if the module is already
+required in a local in scope where the macro is called:
+
+#+begin_src fennel
+  (macro mymacro [a b c]
+  `(mymodule.process (+ b c) a))
+#+end_src
+
+However, this is error-prone; you shouldn't make any assumptions about
+the scope of the caller. While it will fail to compile in contexts
+where mymodule is not in scope at all, there is no guarantee that
+mymodule will be bound to the module you intend. It's much better to
+expand to a form which requires whatever module is needed inside the
+macroexpansion:
+
+#+begin_src fennel
+(macro mymacro [a b c]
+  `(let [mymodule# (require :mymodule)]
+     (mymodule#.process (+ b c) a)))
+#+end_src

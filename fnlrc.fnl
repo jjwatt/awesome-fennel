@@ -48,5 +48,8 @@
 (global mylauncher
         (awful.widget.launcher {:image beautiful.awesome_icon :menu mymainmenu}))
 
+(set menubar.utils.terminal terminal)
+
+
 ;; {:fnlisloaded 1}
 

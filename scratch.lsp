@@ -3,7 +3,7 @@
 	     ,@body))
      (,n ,@(mapcar #'cadr letargs))))
 
-(defmacro when-let (bindings &body body)
+(defmacro when-let1 (bindings &body body)
   "Bind 'bindings' and execute 'body', short-circuiting on 'nil'."
   (let ((symbols (mapcar #'first bindings)))
     `(let ,bindings
