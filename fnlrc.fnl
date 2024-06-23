@@ -17,14 +17,19 @@
 (local hotkeys-popup (require :awful.hotkeys_popup))
 (require :awful.hotkeys_popup.keys)
 (local fun (require :fun))
-
+;; gets all of them under mymacros namespace
+;; (import-macros mymacros :mymacros)
+;; need to get full path for this
+;; or I need to figure out how to expand the fennel load path
+;; otherwise, always has to run from .config/awesome dir to work!
+;; (import-macros {: let*} :letstar)
+;; (import-macros {: when-let} :whenlet)
 (let [signal "request::display_error"]
   (fn [message startup]
     (naughty.notification {: message
                            :title (.. "Oops, an error happened"
                                       (or (and startup "during startup!") "!"))
                            :urgency :critical})))
-
 (beautiful.init :/home/jwattenb/.config/awesome/themes/default/theme.lua)
 
 (global terminal :kitty)
@@ -32,6 +37,7 @@
 (global editor-cmd (.. terminal " -e " editor))
 (global modkey :Mod4)
 
+;; (set beautiful.wallpaper beautiful.themes_path.."default/dock.jpg")
 ;; let* menuconfig just an example don't use
 ;; (global myawesomemenu (let* [[terminal :kitty]
 ;;                              [editor (or (os.getenv :EDITOR :nano))]
@@ -60,6 +66,20 @@
 
 (set menubar.utils.terminal terminal)
 
+;; (let [gfs (require :gears.filesystem)]
+;;   (do (print (gfs.get_themes_dir))
+;;       (print (gfs.get_dir :config))))
+;; Set wallpaper mystyle
+(let [gfs (require :gears.filesystem)]
+  (let [confdir (gfs.get_dir :config)]
+    (let [themedir (.. confdir :themes/default)]
+      (let [dockwp (.. themedir :/dock.jpg)]
+        (do
+          (print confdir)
+          (import-macros {: let*} :letstar)
+          (set beautiful.wallpaper dockwp))))))
+(print beautiful.wallpaper)
 
 ;; {:fnlisloaded 1}
 
+;; (set beautiful.wallpaper beautiful.themes_path.."default/background.jpg")

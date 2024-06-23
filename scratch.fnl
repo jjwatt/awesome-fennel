@@ -176,10 +176,10 @@
              ,then-form
              ,else-form)))))
 
-{: when-let}
-{: if-let}
-{: let*}
-{: when1}
+;; {: when-let}
+;; {: if-let}
+;; {: let*}
+;; {: when1}
 
 ;; (let [t [1 2 3]]
 ;;   (table.insert t 2 "a") ; t is now [1 "a" 2 3]

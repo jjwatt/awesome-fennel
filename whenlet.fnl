@@ -1,5 +1,3 @@
-;; (local fun (require :fun))
-
 (fn when-let [bindings & body]
   "Bind `bindings` and execute `body`, short-circuiting on `nil`.
 
@@ -31,32 +29,5 @@
       `(let ,bindtable
          (when (and ,(table.unpack symbols))
            ,(table.unpack body))))))
-
-;; same shape as the CL one
-;; with fun
-;; (macro let* [bindings body]
-;;   (let [fun (require :fun)
-;;         empty? (fn [t]
-;;                  (if (= nil (next t))
-;;                      true
-;;                      false))]
-;;   (if (empty? bindings)
-;;       `(do ,(table.unpack body))
-;;       `(let ,(fun.car bindings)
-;;             (let [newbindings# ,(icollect [_ v (ipairs (fun.cdr bindings))] v)]
-;;               (let* newbindings#) ,(table.unpack body))))))
-
-;; without fun
-(macro let* [bindings body]
-  (let [car (fn [lst] (. lst 1))
-        cdr (fn [lst] (icollect [i v (ipairs lst)] (if (not= 1 i) v)))
-        empty? (fn [t]
-                 (if (= nil (next t))
-                     true
-                     false))]
-  (if (empty? bindings)
-      `(do ,body)
-      `(let ,(car bindings)
-            (let* ,(cdr bindings) ,body)))))
 
 {: when-let}
