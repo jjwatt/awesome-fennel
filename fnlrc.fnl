@@ -32,6 +32,16 @@
 (global editor-cmd (.. terminal " -e " editor))
 (global modkey :Mod4)
 
+;; let* menuconfig just an example don't use
+;; (global myawesomemenu (let* [[terminal :kitty]
+;;                              [editor (or (os.getenv :EDITOR :nano))]
+;;                              [editor-cmd (.. terminal " -e " editor)]]
+;;                             [[:hotkeys (fn [] (hotkeys-popup.show_help nil (awful.screen.focused)))]
+;;                              [:manual (.. terminal " -e man awesome")]
+;;                              ["edit config" (.. editor-cmd " " aweesome.conffile)]
+;;                              [:restart awesome.restart]
+;;                              [:quit (fn [] (awesome.quit))]])
+        
 ;; let's just see if any of this shit works
 (global myawesomemenu [[:hotkeys
                         (fn []
