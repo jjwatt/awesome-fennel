@@ -153,3 +153,26 @@ macroexpansion:
   `(let [mymodule# (require :mymodule)]
      (mymodule#.process (+ b c) a)))
 #+end_src
+
+https://fennel-lang.org/reference#case-pattern-matching
+
+case pattern matching
+
+(Since 1.3.0)
+
+Evaluates its first argument, then searches thru the subsequent
+pattern/body clauses to find one where the pattern matches the value,
+and evaluates the corresponding body. Pattern matching can be thought
+of as a combination of destructuring and conditionals.
+
+Note: Lua also has "patterns" which are matched against strings
+similar to how regular expressions work in other languages; these are
+two distinct concepts with similar names.
+
+#+begin_src fennel
+  (case mytable
+  59      :will-never-match-hopefully
+  [9 q 5] (print :q q)
+  [1 a b] (+ a b))
+#+end_src
+
