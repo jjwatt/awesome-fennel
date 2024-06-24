@@ -145,6 +145,20 @@
       `(let ,(car bindings)
             (let* ,(cdr bindings) ,body)))))
 
+;; when-let* maybe (wip)
+(macro when-let* [bindings body]
+  (let [empty? #(if (= nil (next $)) true false)
+        car #(. $ 1)
+        cdr (fn [lst] (icollect [i v (ipairs lst)] (if (not= 1 i) v)))]
+    (if (empty? bindings)
+        `(do ,body)
+        '(let ,(car bindings)
+              (when ,(car (car bindings))
+                (when-let* ,(cdr bindings) ,body))))))
+
+(macrodebug (when-let* [[x 1] [y 2]] (> y x) "ok"))
+(when-let* [[x 1] [y 2]] (> y x) "ok")
+
 ;; (macro if-let [bindings then-form else-form]
 ;;   (match bindings
 ;;     [[k v] ...]

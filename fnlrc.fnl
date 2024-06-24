@@ -67,17 +67,32 @@
 (set menubar.utils.terminal terminal)
 
 ;; (let [gfs (require :gears.filesystem)]
+;;   (let [confdir (gfs.get_dir :config)]
+;;     (do
+;;       (print confdir)
+;;       (import-macros {: let*} :letstar))))
+    
+;; (let [gfs (require :gears.filesystem)]
 ;;   (do (print (gfs.get_themes_dir))
 ;;       (print (gfs.get_dir :config))))
-;; Set wallpaper mystyle
+
+;; Set wallpaper nested lets
 (let [gfs (require :gears.filesystem)]
   (let [confdir (gfs.get_dir :config)]
     (let [themedir (.. confdir :themes/default)]
       (let [dockwp (.. themedir :/dock.jpg)]
         (do
-          (print confdir)
-          (import-macros {: let*} :letstar)
           (set beautiful.wallpaper dockwp))))))
+
+;; Set wallpaper with let*
+(import-macros {: let*} :letstar)
+(let* [[gfs (require :gears.filesystem)]
+       [confdir (gfs.get_dir :config)]
+       [themedir (.. confdir :themes/default)]
+       [mywallpaper (.. themedir :/dock.jpg)]]
+      (set beautiful.wallpaper mywallpaper))
+
+
 (print beautiful.wallpaper)
 
 ;; {:fnlisloaded 1}

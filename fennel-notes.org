@@ -176,3 +176,57 @@ two distinct concepts with similar names.
   [1 a b] (+ a b))
 #+end_src
 
+** ref manual
+https://fennel-lang.org/reference
+
+fn function
+
+Creates a function which binds the arguments given inside the square
+brackets. Will accept any number of arguments; ones in excess of the
+declared ones are ignored, and if not enough arguments are supplied to
+cover the declared ones, the remaining ones are given values of nil.
+
+Giving it a name is optional; if one is provided it will be bound to
+it as a local. The following mean exactly the same thing; the first is
+preferred mostly for indentation reasons, but also because it allows
+recursion
+
+Like Lua, functions in Fennel support tail-call optimization, allowing
+(among other things) functions to recurse indefinitely without
+overflowing the stack, provided the call is in a tail position.
+
+The final form in this and all other function forms is used as the
+return value.
+
+lambda/λ nil-checked function
+
+Creates a function like fn does, but throws an error at runtime if any
+of the listed arguments are nil, unless its identifier begins with ?
+
+#+begin_src fennel
+  (lambda [x ?y z]
+    (print (- x (* (or ?y 1) z))))
+#+end_src
+
+Note that the Lua runtime will fill in missing arguments with nil when
+they are not provided by the caller, so an explicit nil argument is no
+different than omitting an argument.
+
+The lambda, case, case-try, match and match-try forms are the only
+place where the ?foo notation is used by the compiler to indicate that
+a nil value is allowed, but it is a useful notation to communicate
+intent anywhere a new local is introduced.
+
+The λ form is an alias for lambda and behaves identically.
+
+(Since 1.1.0)
+
+All forms that accept a docstring will also accept a metadata table in
+the same place
+
+Hash arguments can also be used as parts of multisyms. For instance, #$.foo is a function which will return the value of the "foo" key in its first argument.
+
+Unlike regular functions, there is no implicit do in a hash function,
+and thus it cannot contain multiple forms without an explicit do. The
+body itself is directly used as the return value rather than the last
+element in the body.

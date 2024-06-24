@@ -9,3 +9,10 @@
     `(let ,bindings
        (when (and ,@symbols)
 	 ,@body))))
+
+(defmacro when-let* (bindings &body body)
+  (if (null bindings)
+      `(progn ,@body)
+      `(let ((,(first bindings)))
+         (when ,@body))))
+
