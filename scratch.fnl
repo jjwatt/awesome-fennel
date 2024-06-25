@@ -157,7 +157,7 @@
                 (when-let* ,(cdr bindings) ,body))))))
 
 (macrodebug (when-let* [[x 1] [y 2]] (> y x) "ok"))
-(when-let* [[x 1] [y 2]] (> y x) "ok")
+;;(when-let* [[x 1] [y 2]] (> y x) "ok")
 
 ;; (macro if-let [bindings then-form else-form]
 ;;   (match bindings
