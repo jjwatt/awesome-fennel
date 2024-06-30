@@ -139,8 +139,8 @@
          ,body
          ,...)))
 
-;; without fun
-(macro let* [bindings body]
+;; let*
+(macro let* [bindings body & rest]
   (let [car (fn [lst] (. lst 1))
         cdr (fn [lst] (icollect [i v (ipairs lst)] (if (not= 1 i) v)))
         empty? (fn [t]
@@ -148,12 +148,11 @@
                      true
                      false))]
   (if (empty? bindings)
-      `(do ,body)
+      `(do ,body ,(table.unpack rest))
       `(let ,(car bindings)
-            (let* ,(cdr bindings) ,body)))))
-;; when-let* maybe (wip)
-;; kinda broken. need to do conditional.
-;; UPDATE: I think I fixed it!
+            (let* ,(cdr bindings) ,body ,rest)))))
+
+;; when-let*
 (macro when-let* [bindings conditional body]
   (let [empty? #(if (= nil (next $)) true false)
         car #(. $ 1)
@@ -164,8 +163,8 @@
               (when ,(car (car bindings))
                     (when-let* ,(cdr bindings) ,conditional ,body))))))
 
-(macrodebug (when-let* [[x 1] [y 2]] (> y x) "ok"))
-(when-let* [[x 1] [y 2]] (> y x) "ok")
+;; (macrodebug (when-let* [[x 1] [y 2]] (> y x) "ok"))
+;; (when-let* [[x 1] [y 2]] (> y x) "ok")
 
 ;; (macro if-let [bindings then-form else-form]
 ;;   (match bindings

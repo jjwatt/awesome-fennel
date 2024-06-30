@@ -32,8 +32,21 @@
          (when (and ,(table.unpack symbols))
            ,(table.unpack body))))))
 
-;; without fun
-(fn let* [bindings body]
+;; kind of broken let*, only runs one form.
+;; (fn let* [bindings body]
+;;   (let [car (fn [lst] (. lst 1))
+;;         cdr (fn [lst] (icollect [i v (ipairs lst)] (if (not= 1 i) v)))
+;;         empty? (fn [t]
+;;                  (if (= nil (next t))
+;;                      true
+;;                      false))]
+;;   (if (empty? bindings)
+;;       `(do ,body)
+;;       `(let ,(car bindings)
+;;             (let* ,(cdr bindings) ,body)))))
+
+;; let* without libs
+(macro let* [bindings body & rest]
   (let [car (fn [lst] (. lst 1))
         cdr (fn [lst] (icollect [i v (ipairs lst)] (if (not= 1 i) v)))
         empty? (fn [t]
@@ -41,20 +54,20 @@
                      true
                      false))]
   (if (empty? bindings)
-      `(do ,body)
+      `(do ,body ,(table.unpack rest))
       `(let ,(car bindings)
-            (let* ,(cdr bindings) ,body)))))
+            (let* ,(cdr bindings) ,body ,rest)))))
 
-;; when-let* maybe (wip)
-(fn when-let* [bindings body]
+;; when-let*
+(macro when-let* [bindings conditional body]
   (let [empty? #(if (= nil (next $)) true false)
         car #(. $ 1)
         cdr (fn [lst] (icollect [i v (ipairs lst)] (if (not= 1 i) v)))]
     (if (empty? bindings)
-        `(do ,body)
-        '(let ,(car bindings)
+        `(when ,conditional ,body)
+        `(let ,(car bindings)
               (when ,(car (car bindings))
-                (when-let* ,(cdr bindings) ,body))))))
+                    (when-let* ,(cdr bindings) ,conditional ,body))))))
 
 (fn if-let [bindings then-form else-form]
   (let [map (fn [func lst]

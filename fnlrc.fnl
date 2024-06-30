@@ -58,8 +58,8 @@
          (when (and ,(table.unpack symbols))
            ,(table.unpack body))))))
 
-;; without fun
-(macro let* [bindings body]
+;; let* without libs
+(macro let* [bindings body & rest]
   (let [car (fn [lst] (. lst 1))
         cdr (fn [lst] (icollect [i v (ipairs lst)] (if (not= 1 i) v)))
         empty? (fn [t]
@@ -67,10 +67,10 @@
                      true
                      false))]
   (if (empty? bindings)
-      `(do ,body)
+      `(do ,body ,(table.unpack rest))
       `(let ,(car bindings)
-            (let* ,(cdr bindings) ,body)))))
-
+            (let* ,(cdr bindings) ,body ,rest)))))
+ 
 (macro when-let* [bindings conditional body]
   (let [empty? #(if (= nil (next $)) true false)
         car #(. $ 1)
@@ -103,56 +103,13 @@
                                       (or (and startup "during startup!") "!"))
                            :urgency :critical})))
 
-;; Init my theme file. For now, it's still in lua.
-(beautiful.init :/home/jwattenb/.config/awesome/themes/default/theme.lua)
-
 (global terminal :kitty)
 (global editor (or (os.getenv :EDITOR) :nano))
 (global editor-cmd (.. terminal " -e " editor))
 (global modkey :Mod4)
 
-;; Setup simple awesome menu from default awesome config.
-(global myawesomemenu [[:hotkeys
-                        (fn []
-                          (hotkeys-popup.show_help nil (awful.screen.focused)))]
-                       [:manual (.. terminal " -e man awesome")]
-                       ["edit config" (.. editor-cmd " " awesome.conffile)]
-                       [:restart awesome.restart]
-                       [:quit (fn [] (awesome.quit))]])
-(global mymainmenu
-        (awful.menu {:items [[:awesome myawesomemenu beautiful.awesome_icon]
-                             ["open terminal" terminal]]}))
-(global mylauncher
-        (awful.widget.launcher {:image beautiful.awesome_icon :menu mymainmenu}))
-(set menubar.utils.terminal terminal)
-
-;; (let [gfs (require :gears.filesystem)]
-;;   (let [confdir (gfs.get_dir :config)]
-;;     (do
-;;       (print confdir)
-;;       (import-macros {: let*} :letstar))))
-    
-;; (let [gfs (require :gears.filesystem)]
-;;   (do (print (gfs.get_themes_dir))
-;;       (print (gfs.get_dir :config))))
-
-;; Set wallpaper nested lets
-;; (let [gfs (require :gears.filesystem)]
-;;   (let [confdir (gfs.get_dir :config)]
-;;     (let [themedir (.. confdir :themes/default)]
-;;       (let [dockwp (.. themedir :/dock.jpg)]
-;;         (do
-;;           (set beautiful.wallpaper dockwp))))))
-
-;; Set wallpaper with let*
-;; (import-macros {: let*} :letstar)
-(let* [[gfs (require :gears.filesystem)]
-       [confdir (gfs.get_dir :config)]
-       [themedir (.. confdir :themes/default)]
-       [mywallpaper (.. themedir :/dock.jpg)]]
-      (set beautiful.wallpaper mywallpaper))
-
-(print beautiful.wallpaper)
+;; Screen Setup
+;; ============
 
 ;; Get list of video outputs / screens / displays from xrandr.
 (fn list-video-outputs []
@@ -168,10 +125,48 @@
 ;; Setup triple Display Port setup only when we detect 3 screens
 ;; Otherwise, this will all shortcircuit to nils & we do nothing.
 (if-let [[_outs (list-video-outputs)]] (global vidscreens _outs))
+;; We could check to see if it already ran, but it shouldn't
+;; hurt to run it again.
 (when-let* [[_screens vidscreens]
             [_screen_count (length _screens)]]
            (= _screen_count 3)
            (awful.client.with_shell "$HOME/.screenlayout/tredp.sh"))
+
+;; Theme & Looks Setup
+;;====================
+
+;; Init my theme file. For now, it's still in lua.
+(beautiful.init :/home/jwattenb/.config/awesome/themes/default/theme.lua)
+;; Setup wallpaper
+(let* [[gfs (require :gears.filesystem)]
+       [confdir (gfs.get_dir :config)]
+       [themedir (.. confdir :themes/default)]
+       [mywallpaper (.. themedir :/dock.jpg)]]
+      (set beautiful.wallpaper mywallpaper)
+      (print "from let*" beautiful.wallpaper))
+
+(print "outside let*" beautiful.wallpaper)
+
+;; Menu Setup
+;;===========
+;; Setup simple awesome menu from default awesome config.
+(global myawesomemenu [[:hotkeys
+                        (fn []
+                          (hotkeys-popup.show_help nil (awful.screen.focused)))]
+                       [:manual (.. terminal " -e man awesome")]
+                       ["edit config" (.. editor-cmd " " awesome.conffile)]
+                       [:restart awesome.restart]
+                       [:quit (fn [] (awesome.quit))]])
+(global mymainmenu
+        (awful.menu {:items [[:awesome myawesomemenu beautiful.awesome_icon]
+                             ["open terminal" terminal]]}))
+(global mylauncher
+        (awful.widget.launcher {:image beautiful.awesome_icon :menu mymainmenu}))
+
+;; Set the menubar terminal to our global terminal.
+(set menubar.utils.terminal terminal)
+
+
 
 ;; {:fnlisloaded 1}
 
