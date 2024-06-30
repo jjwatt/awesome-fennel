@@ -204,6 +204,9 @@
 (global mytextclock (wibox.widget.textclock))
 (lambda inc-layout [?n]
   (awful.layout.inc (or ?n 1)))
+(lambda layout-incrementer [?n]
+  (fn []
+    (inc-layout ?n)))
 (fn view-only [tag]
   (: tag :view_only))
 (fn move-to-tag [tag]
@@ -220,22 +223,22 @@
                          (set s.mypromptbox (awful.widget.prompt))
                          (set s.mylayoutbox
                               (awful.widget.layoutbox
-                               {:buttons [(awful.button {}
-                                                        1
-                                                        (fn []
-                                                          (awful.layout.inc 1)))
-                                          (awful.button {}
-                                                        3
-                                                        (fn []
-                                                          (awful.layout.inc (- 1))))
-                                          (awful.button {}
-                                                        4
-                                                        (fn []
-                                                          (awful.layout.inc (- 1))))
-                                          (awful.button {}
-                                                        5
-                                                        (fn []
-                                                          (awful.layout.inc 1)))]
+                               {:buttons [(awful.button
+                                           {}
+                                           1
+                                           (layout-incrementer))
+                                          (awful.button
+                                           {}
+                                           3
+                                           (layout-incrementer (- 1)))
+                                          (awful.button
+                                           {}
+                                           4
+                                           (layout-incrementer (- 1)))
+                                          (awful.button
+                                           {}
+                                           5
+                                           (layout-incrementer))]
                                 :screen s}))
                          (set s.mytaglist
                               (awful.widget.taglist
