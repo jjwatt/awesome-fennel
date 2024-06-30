@@ -42,6 +42,13 @@
 (fn map [func lst]
   (icollect [_ val (ipairs lst)]
     (func val)))
+
+;; map with table.insert
+(fn map2 [f lst]
+  (let [result []]
+    (each [i (ipairs lst)]
+      (table.insert result (f i)))
+    result))
 (fn cadr [lst]
   (car (cdr lst)))
 (fn caadr [lst]
@@ -144,20 +151,21 @@
       `(do ,body)
       `(let ,(car bindings)
             (let* ,(cdr bindings) ,body)))))
-
 ;; when-let* maybe (wip)
-(macro when-let* [bindings body]
+;; kinda broken. need to do conditional.
+;; UPDATE: I think I fixed it!
+(macro when-let* [bindings conditional body]
   (let [empty? #(if (= nil (next $)) true false)
         car #(. $ 1)
         cdr (fn [lst] (icollect [i v (ipairs lst)] (if (not= 1 i) v)))]
     (if (empty? bindings)
-        `(do ,body)
-        '(let ,(car bindings)
+        `(when ,conditional ,body)
+        `(let ,(car bindings)
               (when ,(car (car bindings))
-                (when-let* ,(cdr bindings) ,body))))))
+                    (when-let* ,(cdr bindings) ,conditional ,body))))))
 
 (macrodebug (when-let* [[x 1] [y 2]] (> y x) "ok"))
-;;(when-let* [[x 1] [y 2]] (> y x) "ok")
+(when-let* [[x 1] [y 2]] (> y x) "ok")
 
 ;; (macro if-let [bindings then-form else-form]
 ;;   (match bindings
@@ -189,6 +197,38 @@
          (if (and ,(table.unpack symbols))
              ,then-form
              ,else-form)))))
+
+;; (macro named-let [name bindings & body]
+;;   `(let [,name (fn ,bindings ,(table.unpack body))]
+;;      ,name))
+;; (fn nlet-fact (n)
+;;   (named-let fact [n n]
+;;              (if (= 0 n)) 1 (* n (fact (- n 1)))))
+
+;; (macro named-let [name bindings & body]
+;;   (let [map (fn [func lst]
+;;               (icollect [_ val (ipairs lst)]
+;;                 (func val)))]
+;;     (let [params (map (fn [x] (. x 1)) bindings)
+;;           args (map (fn [binding] (. binding 2)) bindings)]
+;;       (list `let [[name (fn params body)]]
+;;             (list name (unpack args))))))
+
+;; (named-let fact [[n 5] [acc 1]]
+;;            (if (= n 0)
+;;                acc
+;;                (fact (- n 1) (* acc n))))
+
+;; not working (I don't think)
+;; (macro letrec [bindings body & rest]
+;;   (let [car #(. $ 1)]
+;;     ((lambda []
+;;        `(letrec [(car bindings)
+;;                  (fn [,(table.unpack (cdr bindings))]
+;;                    ,body ...)]
+;;                 (let ,(table.unpack rest)))))))
+
+;;(cons infinite (jes)) => (infinite jes)
 
 ;; {: when-let}
 ;; {: if-let}

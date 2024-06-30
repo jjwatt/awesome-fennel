@@ -56,7 +56,31 @@
               (when ,(car (car bindings))
                 (when-let* ,(cdr bindings) ,body))))))
 
+(fn if-let [bindings then-form else-form]
+  (let [map (fn [func lst]
+              (icollect [_ val (ipairs lst)]
+                (func val)))
+        car (fn [lst] (. lst 1))]
+    (let [symbols (map car bindings)
+          bindtable {}]
+      (each [_ v (ipairs bindings)]
+        (each [_ innerv (ipairs v)] (table.insert bindtable innerv)))
+      `(let ,bindtable
+         (if (and ,(table.unpack symbols))
+             ,then-form
+             ,else-form)))))
+
+
 {: when-let
  : let*
- : when-let*}
+ : when-let*
+ : if-let }
+
+;; (macro letrec [bindings & body]
+;;   (let [bindings (table.pack-bindings bindings)]
+;;     (let [names (map car bindings)
+;;           fns (map (fn [[name _ _ :as b]]
+;;                      `(local ,name (fn [,(table.unpack (cdr b))]
+;;                                      ,(table.unpack body))))) bindings] 
+;;       (do ,(table.unpack fns)))))
 
