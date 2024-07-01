@@ -221,6 +221,11 @@
 (fn minimize-client [c]
   (c:activate {:action :toggle_minimization
                :context :tasklist}))
+
+(lambda menu-client-list [?width]
+  (awful.menu.client_list
+   {:theme {:width (or ?width 250)}}))
+
 ;; Desktop Decorations: The Bar
 (screen.connect_signal
  "request::desktop_decoration"
@@ -257,46 +262,43 @@
           :screen s}))
    (set s.mytasklist
         (awful.widget.tasklist
-         {:buttons [
-                    (awful-button
+         {:buttons [(awful-button
                      1 minimize-client)
-                    ;; (awful.button
-                    ;;  {}
-                    ;;  1
-                    ;;  (fn [c]
-                    ;;    (c:activate {:action :toggle_minimization
-                    ;;                 :context :tasklist})))
-                    (awful.button
-                     {}
-                     3
-                     (fn []
-                       (awful.menu.client_list {:theme {:width 250}})))
-                    (awful.button
-                     {}
-                     4
-                     (fn []
-                       (awful.client.focus.byidx (- 1))))
-                    (awful.button
-                     {}
-                     5
-                     (fn []
-                       (awful.client.focus.byidx 1)))]
+                    ;; A nice client menu on mouse btn 3.
+                    ;; Set 300 to something else to make the
+                    ;; client list wider.
+                    (awful-button
+                     3 #(menu-client-list 300))
+                    ;; 4 and 5 happen to map to scroll up & down
+                    ;; on my trackball--probably on most mice.
+                    ;; So, this lets you scroll up & down between
+                    ;; clients in the task list.
+                    (awful-button
+                     4 #(awful.client.focus.byidx (- 1)))
+                    (awful-button
+                     5 #(awful.client.focus.byidx 1))
+                     ]
           :filter awful.widget.tasklist.filter.currenttags
           :screen s}))
+   ;; set s.mywibox to the widget defined by the table
+   ;; this sets up the horizontal bar at the top and all
+   ;; the widgets in it.
    (set s.mywibox
         (awful.wibar
          {:position :top
           :screen s
-          :widget {1 {1 mylauncher
-                      2 s.mytaglist
-                      3 s.mypromptbox
-                      :layout wibox.layout.fixed.horizontal}
+          :widget {1
+                   {1 mylauncher
+                    2 s.mytaglist
+                    3 s.mypromptbox
+                    :layout wibox.layout.fixed.horizontal}
                    2 s.mytasklist
-                   3 {1 mykeyboardlayout
-                      2 (wibox.widget.systray)
-                      3 mytextclock
-                      4 s.mylayoutbox
-                      :layout wibox.layout.fixed.horizontal}
+                   3
+                   {1 mykeyboardlayout
+                    2 (wibox.widget.systray)
+                    3 mytextclock
+                    4 s.mylayoutbox
+                    :layout wibox.layout.fixed.horizontal}
                    :layout wibox.layout.align.horizontal}}))))
 
 ;; {:fnlisloaded 1}
