@@ -107,6 +107,10 @@
 (global editor (or (os.getenv :EDITOR) :nano))
 (global editor-cmd (.. terminal " -e " editor))
 (global modkey :Mod4)
+(print :terminal terminal)
+(print :editor editor)
+(print :editor-cmd editor-cmd)
+(print :modkey modkey)
 
 ;; Screen Setup
 ;; ============
@@ -130,7 +134,7 @@
 (when-let* [[_screens vidscreens]
             [_screen_count (length _screens)]]
            (= _screen_count 3)
-           (awful.client.with_shell "$HOME/.screenlayout/tredp.sh"))
+           (awful.spawn.with_shell "$HOME/.screenlayout/tredp.sh"))
 
 ;; Theme & Looks Setup
 ;;====================
@@ -142,21 +146,21 @@
        [confdir (gfs.get_dir :config)]
        [themedir (.. confdir :themes/default)]
        [mywallpaper (.. themedir :/dock.jpg)]]
-      (set beautiful.wallpaper mywallpaper)
-      (print "from let*" beautiful.wallpaper))
-
-(print "outside let*" beautiful.wallpaper)
+      (set beautiful.wallpaper mywallpaper))
 
 ;; Menu Setup
 ;;===========
 ;; Setup simple awesome menu from default awesome config.
 (global myawesomemenu [[:hotkeys
-                        (fn []
-                          (hotkeys-popup.show_help nil (awful.screen.focused)))]
-                       [:manual (.. terminal " -e man awesome")]
-                       ["edit config" (.. editor-cmd " " awesome.conffile)]
-                       [:restart awesome.restart]
-                       [:quit (fn [] (awesome.quit))]])
+                        #(hotkeys-popup.show_help nil (awful.screen.focused))]
+                       [:manual
+                        (.. terminal " -e man awesome")]
+                       ["edit config"
+                        (.. editor-cmd " " awesome.conffile)]
+                       [:restart
+                        awesome.restart]
+                       [:quit
+                        #(awesome.quit)]])
 (global mymainmenu
         (awful.menu {:items [[:awesome myawesomemenu beautiful.awesome_icon]
                              ["open terminal" terminal]]}))
@@ -294,10 +298,11 @@
                     :layout wibox.layout.fixed.horizontal}
                    2 s.mytasklist
                    3
-                   {1 mykeyboardlayout
-                    2 (wibox.widget.systray)
-                    3 mytextclock
-                    4 s.mylayoutbox
+                   {
+;;                    1 mykeyboardlayout
+                    1 (wibox.widget.systray)
+                    2 mytextclock
+                    3 s.mylayoutbox
                     :layout wibox.layout.fixed.horizontal}
                    :layout wibox.layout.align.horizontal}}))))
 
