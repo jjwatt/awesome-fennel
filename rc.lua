@@ -120,11 +120,11 @@ end)
 
 -- {{{ Wibar
 
--- -- Keyboard map indicator and switcher
--- mykeyboardlayout = awful.widget.keyboardlayout()
+-- Keyboard map indicator and switcher
+mykeyboardlayout = awful.widget.keyboardlayout()
 
--- -- Create a textclock widget
--- mytextclock = wibox.widget.textclock()
+-- Create a textclock widget
+mytextclock = wibox.widget.textclock()
 
 -- screen.connect_signal("request::desktop_decoration", function(s)
 --     -- Each screen has its own tag table.
@@ -205,7 +205,7 @@ end)
 --     }
 -- end)
 
--- -- }}}
+-- }}}
 
 -- {{{ Mouse bindings
 awful.mouse.append_global_mousebindings({

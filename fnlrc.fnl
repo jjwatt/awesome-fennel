@@ -199,7 +199,6 @@
                                                     :widget wibox.container.tile}})))
 
 ;; could be prettier
-;; TODO: Rewrite this more lispy!
 (global mykeyboardlayout (awful.widget.keyboardlayout))
 (global mytextclock (wibox.widget.textclock))
 (lambda inc-layout [?n]
@@ -207,15 +206,21 @@
 (lambda layout-incrementer [?n]
   (fn []
     (inc-layout ?n)))
+(fn client-toggle-tag [tag]
+   (when client.focus
+     (client.focus:toggle_tag tag)))
 (fn view-only [tag]
    (: tag :view_only))
 (fn move-to-tag [tag]
   (when client.focus
     (client.focus:move_to_tag tag)))
-(fn toggle-tag [tag]
-  ;; TODO
-  )
-
+(lambda awful-button [btn-num f ?mod]
+  (awful.button (or ?mod {})
+                btn-num
+                f))
+(fn minimize-client [c]
+  (c:activate {:action :toggle_minimization
+               :context :tasklist}))
 ;; Desktop Decorations: The Bar
 (screen.connect_signal
  "request::desktop_decoration"
@@ -225,70 +230,57 @@
    (set s.mypromptbox (awful.widget.prompt))
    (set s.mylayoutbox
         (awful.widget.layoutbox
-         {:buttons [(awful.button
-                     {}
-                     1
-                     (layout-incrementer))
-                    (awful.button
-                     {}
-                     3
-                     (layout-incrementer (- 1)))
-                    (awful.button
-                     {}
-                     4
-                     (layout-incrementer (- 1)))
-                    (awful.button
-                     {}
-                     5
-                     (layout-incrementer))]
+         {:buttons [(awful-button
+                     1 (layout-incrementer))
+                    (awful-button
+                     3 (layout-incrementer (- 1)))
+                    (awful-button
+                     4 (layout-incrementer (- 1)))
+                    (awful-button
+                     5 (layout-incrementer))]
           :screen s}))
    (set s.mytaglist
         (awful.widget.taglist
-         {:buttons [(awful.button {}
-                                  1
-                                  view-only)
-                    (awful.button [modkey]
-                                  1
-                                  (fn [t]
-                                    (when client.focus
-                                      (client.focus:move_to_tag t))))
-                    (awful.button {}
-                                  3
-                                  awful.tag.viewtoggle)
-                    (awful.button [modkey]
-                                  3
-                                  (fn [t]
-                                    (when client.focus
-                                      (client.focus:toggle_tag t))))
-                    (awful.button {}
-                                  4
-                                  (fn [t]
-                                    (awful.tag.viewprev t.screen)))
-                    (awful.button {}
-                                  5
-                                  (fn [t]
-                                    (awful.tag.viewnext t.screen)))]
+         {:buttons [(awful-button
+                     1 view-only)
+                    (awful-button
+                     1 move-to-tag [modkey])
+                    (awful-button
+                     3 awful.tag.viewtoggle)
+                    (awful-button
+                     3 client-toggle-tag [modkey])
+                    (awful-button
+                     4 #(awful.tag.viewprev $.screen))
+                    (awful-button
+                     5 #(awful.tag.viewnext $.screen))]
           :filter awful.widget.taglist.filter.all
           :screen s}))
    (set s.mytasklist
         (awful.widget.tasklist
-         {:buttons [(awful.button {}
-                                  1
-                                  (fn [c]
-                                    (c:activate {:action :toggle_minimization
-                                                 :context :tasklist})))
-                    (awful.button {}
-                                  3
-                                  (fn []
-                                    (awful.menu.client_list {:theme {:width 250}})))
-                    (awful.button {}
-                                  4
-                                  (fn []
-                                    (awful.client.focus.byidx (- 1))))
-                    (awful.button {}
-                                  5
-                                  (fn []
-                                    (awful.client.focus.byidx 1)))]
+         {:buttons [
+                    (awful-button
+                     1 minimize-client)
+                    ;; (awful.button
+                    ;;  {}
+                    ;;  1
+                    ;;  (fn [c]
+                    ;;    (c:activate {:action :toggle_minimization
+                    ;;                 :context :tasklist})))
+                    (awful.button
+                     {}
+                     3
+                     (fn []
+                       (awful.menu.client_list {:theme {:width 250}})))
+                    (awful.button
+                     {}
+                     4
+                     (fn []
+                       (awful.client.focus.byidx (- 1))))
+                    (awful.button
+                     {}
+                     5
+                     (fn []
+                       (awful.client.focus.byidx 1)))]
           :filter awful.widget.tasklist.filter.currenttags
           :screen s}))
    (set s.mywibox
