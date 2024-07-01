@@ -162,45 +162,48 @@
                        [:quit
                         #(awesome.quit)]])
 (global mymainmenu
-        (awful.menu {:items [[:awesome myawesomemenu beautiful.awesome_icon]
-                             ["open terminal" terminal]]}))
+        (awful.menu {:items
+                     [[:awesome
+                       myawesomemenu beautiful.awesome_icon]
+                      ["open terminal" terminal]]}))
 (global mylauncher
-        (awful.widget.launcher {:image beautiful.awesome_icon :menu mymainmenu}))
+        (awful.widget.launcher
+         {:image beautiful.awesome_icon :menu mymainmenu}))
 
 ;; Set the menubar terminal to our global terminal.
 (set menubar.utils.terminal terminal)
 
-
-;; Starting to add more stuff from the default config
+;; Default layouts and layout order
 (tag.connect_signal "request::default_layouts"
-                    (fn []
-                      (awful.layout.append_default_layouts [awful.layout.suit.floating
-                                                            awful.layout.suit.tile
-                                                            awful.layout.suit.tile.left
-                                                            awful.layout.suit.tile.bottom
-                                                            awful.layout.suit.tile.top
-                                                            awful.layout.suit.fair
-                                                            awful.layout.suit.fair.horizontal
-                                                            awful.layout.suit.spiral
-                                                            awful.layout.suit.spiral.dwindle
-                                                            awful.layout.suit.max
-                                                            awful.layout.suit.max.fullscreen
-                                                            awful.layout.suit.magnifier
-                                                            awful.layout.suit.corner.nw])))
+                    #(awful.layout.append_default_layouts
+                      [awful.layout.suit.floating
+                       awful.layout.suit.tile
+                       awful.layout.suit.tile.left
+                       awful.layout.suit.tile.bottom
+                       awful.layout.suit.tile.top
+                       awful.layout.suit.fair
+                       awful.layout.suit.fair.horizontal
+                       awful.layout.suit.spiral
+                       awful.layout.suit.spiral.dwindle
+                       awful.layout.suit.max
+                       awful.layout.suit.max.fullscreen
+                       awful.layout.suit.magnifier
+                       awful.layout.suit.corner.nw]))
 
 ;; wallpaper signal?
-;; TODO: rewrite this in lisp
 (screen.connect_signal "request::wallpaper"
                        (fn [s]
-                         (awful.wallpaper {:screen s
-                                           :widget {1 {:downscale true
-                                                       :image beautiful.wallpaper
-                                                       :upscale true
-                                                       :widget wibox.widget.imagebox}
-                                                    :halign :center
-                                                    :tiled false
-                                                    :valign :center
-                                                    :widget wibox.container.tile}})))
+                         (awful.wallpaper
+                          {:screen s
+                           :widget {1
+                                    {:downscale true
+                                     :image beautiful.wallpaper
+                                     :upscale true
+                                     :widget wibox.widget.imagebox}
+                                    :halign :center
+                                    :tiled false
+                                    :valign :center
+                                    :widget wibox.container.tile}})))
 
 ;; could be prettier
 (global mykeyboardlayout (awful.widget.keyboardlayout))
