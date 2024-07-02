@@ -42,15 +42,19 @@
       (set wibox.layout.align {})
       (set wibox.layout.align.horizontal :align-horizontal)
       (set awful.wibar :awful.wibar)
-      (let [leftwidgets [mylauncher s.mytaglist s.mypromptbox]
-            middlewidget s.mytaglist
-            rightwidgets [wibox.widget.systray mytextclock s.mylayoutbox]]
-        (tset leftwidgets :layout wibox.layout.fixed.horizontal)
-        (tset rightwidgets :layout wibox.layout.fixed.horizontal)
-        (let [megawidget [leftwidgets middlewidget rightwidgets]]
-          (tset megawidget :layout wibox.layout.align.horizontal)
-          (set s.mywibox
-               [awful.wibar
-                {:position :top
-                 :screen :s
-                 :widget megawidget}]))) s)
+      (let [megawidget
+            (make-box
+             wibox.layout.align.horizontal
+             (let [leftwidgets (make-box
+                                wibox.layout.fixed.horizontal
+                                [mylauncher s.mytaglist s.mypromptbox])
+                   middlewidget s.mytasklist
+                   rightwidgets (make-box
+                                 wibox.layout.fixed.horizontal
+                                 [wibox.widget.systray mytextclock s.mylayoutbox])]
+               [leftwidgets middlewidget rightwidgets]))]
+        (set s.mywibox
+             [awful.wibar
+              {:position :top
+               :screen :s
+               :widget megawidget}]) s))
