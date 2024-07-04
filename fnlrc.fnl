@@ -1,4 +1,3 @@
-(pcall require :luarocks.loader)
 ;; this is probably not the best way to do this
 ;; this is copied from the antifennel of my rc.lua
 ;; see fennel-lang.org docs &
@@ -58,7 +57,7 @@
          (when (and ,(table.unpack symbols))
            ,(table.unpack body))))))
 
-;; let* without libs
+;; let*
 (macro let* [bindings body & rest]
   (let [car (fn [lst] (. lst 1))
         cdr (fn [lst] (icollect [i v (ipairs lst)] (if (not= 1 i) v)))
@@ -112,9 +111,9 @@
 (print :editor-cmd editor-cmd)
 (print :modkey modkey)
 
-;; Screen Setup
-;; ============
-
+;;,-------------
+;;| Screen Setup
+;;`-------------
 ;; Get list of video outputs / screens / displays from xrandr.
 (fn list-video-outputs []
   (let [outputs {}
@@ -128,28 +127,34 @@
     outputs))
 ;; Setup triple Display Port setup only when we detect 3 screens
 ;; Otherwise, this will all shortcircuit to nils & we do nothing.
-(if-let [[_outs (list-video-outputs)]] (global vidscreens _outs))
+(if-let [[_outs (list-video-outputs)]] (global xrandr-screens _outs))
 ;; We could check to see if it already ran, but it shouldn't
 ;; hurt to run it again.
-(when-let* [[_screens vidscreens]
-            [_screen_count (length _screens)]]
-           (= _screen_count 3)
-           (awful.spawn.with_shell "$HOME/.screenlayout/tredp.sh"))
+(when-let* [[screens xrandr-screens]
+            [screen-count (length screens)]
+            [screen-layouts-path "$HOME/.screenlayout/"]
+            [screen-layout "tredp1mir.sh"]
+            [screen-layout-script (.. screen-layouts-path screen-layout)]]
+           (= screen-count 3)
+           (awful.spawn.with_shell screen-layout-script))
 
-;; Theme & Looks Setup
-;;====================
+;;,--------------------
+;;| Theme & Looks Setup
+;;`--------------------
 
 ;; Init my theme file. For now, it's still in lua.
 (beautiful.init :/home/jwattenb/.config/awesome/themes/default/theme.lua)
 ;; Setup wallpaper
+;; TODO: try this as when-let* because we don't want to set it if nil.
 (let* [[gfs (require :gears.filesystem)]
        [confdir (gfs.get_dir :config)]
        [themedir (.. confdir :themes/default)]
        [mywallpaper (.. themedir :/dock.jpg)]]
       (set beautiful.wallpaper mywallpaper))
 
-;; Menu Setup
-;;===========
+;;,-----------
+;;| Menu Setup
+;;`-----------
 ;; Setup simple awesome menu from default awesome config.
 (global myawesomemenu [[:hotkeys
                         #(hotkeys-popup.show_help nil (awful.screen.focused))]
@@ -206,7 +211,6 @@
                                     :widget wibox.container.tile}})))
 
 ;; could be prettier
-(global mykeyboardlayout (awful.widget.keyboardlayout))
 (global mytextclock (wibox.widget.textclock))
 (lambda inc-layout [?n]
   (awful.layout.inc (or ?n 1)))
@@ -228,10 +232,17 @@
 (fn minimize-client [c]
   (c:activate {:action :toggle_minimization
                :context :tasklist}))
-
 (lambda menu-client-list [?width]
   (awful.menu.client_list
    {:theme {:width (or ?width 250)}}))
+(fn make-box [layout lst]
+  "Put a layout and a list of widgets into a wibox"
+  (let [w lst]
+    (tset w :layout layout)
+    w))
+;; Praise Widget from tutorial
+;; (local praisewidget (wibox.widget.textbox))
+;; (set praisewidget.text "You are great!")
 
 ;; Desktop Decorations: The Bar
 (screen.connect_signal
@@ -284,31 +295,49 @@
                      4 #(awful.client.focus.byidx (- 1)))
                     (awful-button
                      5 #(awful.client.focus.byidx 1))
-                     ]
+                    ]
           :filter awful.widget.tasklist.filter.currenttags
           :screen s}))
    ;; set s.mywibox to the widget defined by the table
    ;; this sets up the horizontal bar at the top and all
    ;; the widgets in it.
-   (set s.mywibox
-        (awful.wibar
-         {:position :top
-          :screen s
-          :widget {1
-                   {1 mylauncher
-                    2 s.mytaglist
-                    3 s.mypromptbox
-                    :layout wibox.layout.fixed.horizontal}
-                   2 s.mytasklist
-                   3
-                   {
-;;                    1 mykeyboardlayout
-                    1 (wibox.widget.systray)
-                    2 mytextclock
-                    3 s.mylayoutbox
-                    :layout wibox.layout.fixed.horizontal}
-                   :layout wibox.layout.align.horizontal}}))))
+;;    (set s.mywibox
+;;         (awful.wibar
+;;          {:position :top
+;;           :screen s
+;;           :widget {1
+;;                    {1 mylauncher
+;;                     2 s.mytaglist
+;;                     3 s.mypromptbox
+;;                     :layout wibox.layout.fixed.horizontal}
+;;                    2 s.mytasklist
+;;                    3
+;;                    {
+;;                     ;;                    1 mykeyboardlayout
+;;                     1 (wibox.widget.systray)
+;; ;;                    2 praisewidget
+;;                     2 mytextclock
+;;                     3 s.mylayoutbox
+;;                     :layout wibox.layout.fixed.horizontal}
+;;                    :layout wibox.layout.align.horizontal}}))
+   (when-let [[topbar
+               (make-box
+                wibox.layout.align.horizontal
+                (let [leftwidgets
+                      (make-box wibox.layout.align.horizontal
+                                [mylauncher s.mytaglist s.mypromptbox])
+                      middlewidget s.mytasklist
+                      rightwidgets
+                      (make-box wibox.layout.fixed.horizontal
+                                [wibox.widget.systray mytextclock s.mylayoutbox])]
+                  [leftwidgets middlewidget rightwidgets]))]]
+             (set s.mywibox
+                  (awful.wibar
+                   {:position :top
+                    :screen s
+                    :widget topbar}))))
 
-;; {:fnlisloaded 1}
+ ;; {:fnlisloaded 1}
 
-;; (set beautiful.wallpaper beautiful.themes_path.."default/background.jpg")
+ ;; (set beautiful.wallpaper beautiful.themes_path.."default/background.jpg")
+ )

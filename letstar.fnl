@@ -1,5 +1,5 @@
 
-(fn let* [bindings body]
+(fn let* [bindings body & rest]
   (let [car (fn [lst] (. lst 1))
         cdr (fn [lst] (icollect [i v (ipairs lst)] (if (not= 1 i) v)))
         empty? (fn [t]
@@ -7,8 +7,8 @@
                      true
                      false))]
   (if (empty? bindings)
-      `(do ,body)
+      `(do ,body ,(table.unpack rest))
       `(let ,(car bindings)
-            (let* ,(cdr bindings) ,body)))))
+            (let* ,(cdr bindings) ,body ,rest)))))
 
 {: let*}
