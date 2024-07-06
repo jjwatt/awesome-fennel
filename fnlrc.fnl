@@ -251,6 +251,20 @@
    (awful.tag [:1 :2 :3 :4 :5 :6 :7 :8 :9] s
               (. awful.layout.layouts 1))
    (set s.mypromptbox (awful.widget.prompt))
+   ;; (local vicious (require :vicious))
+   ;; (set s.mybatbox (awful.widget.layoutbox))
+   ;; (set s.mybatbox.max_value 100)
+   ;; (set s.mybatbox.forced_height 20)
+   ;; (set s.mybatbox.forced_width 50)
+   ;; (set s.mybatbox.paddings 1)
+   ;; (set s.mybatbox.border_color beautiful.border_color)
+   ;; (set s.mybatbox.widget wibox.widget.progressbar)
+   ;; (vicious.register s.mybatterywidget vicious.widgets.bat "$2" 61 "BAT0")
+   ;; (set s.mybatbox.layout wibox.container.rotate)
+   (local vicious-widgets (require :vicious.widgets.init))
+   (local bat-text-widget (wibox.widget.textbox))
+   (set bat-text-widget.text (table.concat (let [[a b & _] (vicious-widgets.bat nil "BAT0")] [b a]) " "))
+   
    (set s.mylayoutbox
         (awful.widget.layoutbox
          {:buttons [(awful-button
@@ -286,7 +300,7 @@
                     ;; Set 300 to something else to make the
                     ;; client list wider.
                     (awful-button
-                     3 #(menu-client-list 300))
+                     3 #(menu-client-list 400))
                     ;; 4 and 5 happen to map to scroll up & down
                     ;; on my trackball--probably on most mice.
                     ;; So, this lets you scroll up & down between
@@ -298,28 +312,9 @@
                     ]
           :filter awful.widget.tasklist.filter.currenttags
           :screen s}))
-   ;; set s.mywibox to the widget defined by the table
-   ;; this sets up the horizontal bar at the top and all
-   ;; the widgets in it.
-;;    (set s.mywibox
-;;         (awful.wibar
-;;          {:position :top
-;;           :screen s
-;;           :widget {1
-;;                    {1 mylauncher
-;;                     2 s.mytaglist
-;;                     3 s.mypromptbox
-;;                     :layout wibox.layout.fixed.horizontal}
-;;                    2 s.mytasklist
-;;                    3
-;;                    {
-;;                     ;;                    1 mykeyboardlayout
-;;                     1 (wibox.widget.systray)
-;; ;;                    2 praisewidget
-;;                     2 mytextclock
-;;                     3 s.mylayoutbox
-;;                     :layout wibox.layout.fixed.horizontal}
-;;                    :layout wibox.layout.align.horizontal}}))
+   ;;    set s.mywibox to the widget defined by the table
+   ;;    this sets up the horizontal bar at the top and all
+   ;;    the widgets in it.
    (when-let [[topbar
                (make-box
                 wibox.layout.align.horizontal
@@ -329,7 +324,7 @@
                       middlewidget s.mytasklist
                       rightwidgets
                       (make-box wibox.layout.fixed.horizontal
-                                [wibox.widget.systray mytextclock s.mylayoutbox])]
+                                [bat-text-widget wibox.widget.systray mytextclock s.mylayoutbox])]
                   [leftwidgets middlewidget rightwidgets]))]]
              (set s.mywibox
                   (awful.wibar
