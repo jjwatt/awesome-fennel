@@ -261,6 +261,7 @@
    ;; (set s.mybatbox.widget wibox.widget.progressbar)
    ;; (vicious.register s.mybatterywidget vicious.widgets.bat "$2" 61 "BAT0")
    ;; (set s.mybatbox.layout wibox.container.rotate)
+   ;; TODO: Only build the battery widget if there's a BAT
    (local vicious-widgets (require :vicious.widgets.init))
    (local bat-text-widget (wibox.widget.textbox))
    (set bat-text-widget.text (table.concat (let [[a b & _] (vicious-widgets.bat nil "BAT0")] [b a]) " "))
@@ -331,7 +332,19 @@
                    {:position :top
                     :screen s
                     :widget topbar}))))
+(awful.mouse.append_global_mousebindings
+ [(awful.button {} 3 #(mymainmenu:toggle))
+  (awful.button {} 4 awful.tag.viewprev)
+  (awful.button {} 5 awful.tag.viewnext)]
+ )
 
+;; Key Bindings
+;; General Awesom keys
+;; (awful.keyboard.append_global_keybindings [(awfulkey
+;;                                             [modkey] :s
+;;                                             hotkeys-popup.show_help
+;;                                             {:description "show help"
+;;                                              :group :awesome})])
  ;; {:fnlisloaded 1}
 
  ;; (set beautiful.wallpaper beautiful.themes_path.."default/background.jpg")
