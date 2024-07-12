@@ -133,7 +133,7 @@
 (when-let* [[screens xrandr-screens]
             [screen-count (length screens)]
             [screen-layouts-path "$HOME/.screenlayout/"]
-            [screen-layout "tredp1mir.sh"]
+            [screen-layout "tredphdmi.sh"]
             [screen-layout-script (.. screen-layouts-path screen-layout)]]
            (= screen-count 3)
            (awful.spawn.with_shell screen-layout-script))
@@ -264,7 +264,7 @@
    ;; TODO: Only build the battery widget if there's a BAT
    (local vicious-widgets (require :vicious.widgets.init))
    (local bat-text-widget (wibox.widget.textbox))
-   (set bat-text-widget.text (table.concat (let [[a b & _] (vicious-widgets.bat nil "BAT0")] [b a]) " "))
+   (set bat-text-widget.text (table.concat (let [[a b & _] (vicious-widgets.bat nil "BAT0")] [a b]) " "))
    
    (set s.mylayoutbox
         (awful.widget.layoutbox
@@ -333,7 +333,7 @@
                     :screen s
                     :widget topbar}))))
 (awful.mouse.append_global_mousebindings
- [(awful.button {} 3 #(mymainmenu:toggle))
+ [(awful.button {} 3 (fn [] (mymainmenu:toggle)))
   (awful.button {} 4 awful.tag.viewprev)
   (awful.button {} 5 awful.tag.viewnext)]
  )
