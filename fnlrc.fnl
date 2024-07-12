@@ -345,6 +345,100 @@
 ;;                                             hotkeys-popup.show_help
 ;;                                             {:description "show help"
 ;;                                              :group :awesome})])
+
+(awful.keyboard.append_global_keybindings [(awful.key [modkey] :s
+                                                      hotkeys-popup.show_help
+                                                      {:description "show help"
+                                                       :group :awesome})
+                                           (awful.key [modkey] :w
+                                                      (fn [] (mymainmenu:show))
+                                                      {:description "show main menu"
+                                                       :group :awesome})
+                                           (awful.key [modkey :Control] :r
+                                                      awesome.restart
+                                                      {:description "reload awesome"
+                                                       :group :awesome})
+                                           (awful.key [modkey :Shift] :q
+                                                      awesome.quit
+                                                      {:description "quit awesome"
+                                                       :group :awesome})
+                                           (awful.key [modkey] :x
+                                                      (fn []
+                                                        (awful.prompt.run {:exe_callback awful.util.eval
+                                                                           :history_path (.. (awful.util.get_cache_dir)
+                                                                                             :/history_eval)
+                                                                           :prompt "Run Lua code: "
+                                                                           :textbox (. (awful.screen.focused)
+                                                                                       :mypromptbox
+                                                                                       :widget)}))
+                                                      {:description "lua execute prompt"
+                                                       :group :awesome})
+                                           (awful.key [modkey] :Return
+                                                      (fn []
+                                                        (awful.spawn terminal))
+                                                      {:description "open a terminal"
+                                                       :group :launcher})
+                                           (awful.key [modkey] :r
+                                                      (fn []
+                                                        ;; Get :mypromptbox and call mypromptbox:run() on it
+                                                        (: (. (awful.screen.focused)
+                                                              :mypromptbox)
+                                                           :run))
+                                                      {:description "run prompt"
+                                                       :group :launcher})
+                                           (awful.key [modkey] :p
+                                                      (fn [] (menubar.show))
+                                                      {:description "show the menubar"
+                                                       :group :launcher})])
+
+(awful.keyboard.append_global_keybindings [(awful.key [modkey] :Left
+                                                      awful.tag.viewprev
+                                                      {:description "view previous"
+                                                       :group :tag})
+                                           (awful.key [modkey] :Right
+                                                      awful.tag.viewnext
+                                                      {:description "view next"
+                                                       :group :tag})
+                                           (awful.key [modkey] :Escape
+                                                      awful.tag.history.restore
+                                                      {:description "go back"
+                                                       :group :tag})])
+(awful.keyboard.append_global_keybindings [(awful.key [modkey] :j
+                                                      (fn []
+                                                        (awful.client.focus.byidx 1))
+                                                      {:description "focus next by index"
+                                                       :group :client})
+                                           (awful.key [modkey] :k
+                                                      (fn []
+                                                        (awful.client.focus.byidx (- 1)))
+                                                      {:description "focus previous by index"
+                                                       :group :client})
+                                           (awful.key [modkey] :Tab
+                                                      (fn []
+                                                        (awful.client.focus.history.previous)
+                                                        (when client.focus
+                                                          (client.focus:raise)))
+                                                      {:description "go back"
+                                                       :group :client})
+                                           (awful.key [modkey :Control] :j
+                                                      (fn []
+                                                        (awful.screen.focus_relative 1))
+                                                      {:description "focus the next screen"
+                                                       :group :screen})
+                                           (awful.key [modkey :Control] :k
+                                                      (fn []
+                                                        (awful.screen.focus_relative (- 1)))
+                                                      {:description "focus the previous screen"
+                                                       :group :screen})
+                                           (awful.key [modkey :Control] :n
+                                                      (fn []
+                                                        (let [c (awful.client.restore)]
+                                                          (when c
+                                                            (c:activate {:context :key.unminimize
+                                                                         :raise true}))))
+                                                      {:description "restore minimized"
+                                                       :group :client})])
+
  ;; {:fnlisloaded 1}
 
  ;; (set beautiful.wallpaper beautiful.themes_path.."default/background.jpg")
