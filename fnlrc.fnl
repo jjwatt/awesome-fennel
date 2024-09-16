@@ -15,6 +15,7 @@
 (local menubar (require :menubar))
 (local hotkeys-popup (require :awful.hotkeys_popup))
 (require :awful.hotkeys_popup.keys)
+(local vicious (require :vicious))
 ;; (local fun (require :fun))
 ;; gets all of them under mymacros namespace
 ;; (import-macros mymacros :mymacros)
@@ -251,7 +252,6 @@
    (awful.tag [:1 :2 :3 :4 :5 :6 :7 :8 :9] s
               (. awful.layout.layouts 1))
    (set s.mypromptbox (awful.widget.prompt))
-   ;; (local vicious (require :vicious))
    ;; (set s.mybatbox (awful.widget.layoutbox))
    ;; (set s.mybatbox.max_value 100)
    ;; (set s.mybatbox.forced_height 20)
@@ -264,7 +264,11 @@
    ;; TODO: Only build the battery widget if there's a BAT
    (local vicious-widgets (require :vicious.widgets.init))
    (local bat-text-widget (wibox.widget.textbox))
-   (set bat-text-widget.text (table.concat (let [[a b & _] (vicious-widgets.bat nil "BAT0")] [a b]) " "))
+   (set bat-text-widget.text
+        (table.concat
+         (let [[a b & _]
+               (vicious-widgets.bat nil "BAT0")] [a b]) " "))
+   (vicious.register bat-text-widget vicious-widgets.bat "$1 $2" 61 "BAT0")
    
    (set s.mylayoutbox
         (awful.widget.layoutbox
@@ -333,7 +337,7 @@
                     :screen s
                     :widget topbar}))))
 (awful.mouse.append_global_mousebindings
- [(awful.button {} 3 (fn [] (mymainmenu:toggle)))
+ [(awful.button {} 3 #(mymainmenu:toggle))
   (awful.button {} 4 awful.tag.viewprev)
   (awful.button {} 5 awful.tag.viewnext)]
  )
@@ -351,7 +355,7 @@
                                                       {:description "show help"
                                                        :group :awesome})
                                            (awful.key [modkey] :w
-                                                      (fn [] (mymainmenu:show))
+                                                      #(mymainmenu:show)
                                                       {:description "show main menu"
                                                        :group :awesome})
                                            (awful.key [modkey :Control] :r
@@ -363,19 +367,17 @@
                                                       {:description "quit awesome"
                                                        :group :awesome})
                                            (awful.key [modkey] :x
-                                                      (fn []
-                                                        (awful.prompt.run {:exe_callback awful.util.eval
-                                                                           :history_path (.. (awful.util.get_cache_dir)
-                                                                                             :/history_eval)
-                                                                           :prompt "Run Lua code: "
-                                                                           :textbox (. (awful.screen.focused)
-                                                                                       :mypromptbox
-                                                                                       :widget)}))
+                                                      #(awful.prompt.run {:exe_callback awful.util.eval
+                                                                          :history_path (.. (awful.util.get_cache_dir)
+                                                                                            :/history_eval)
+                                                                          :prompt "Run Lua code: "
+                                                                          :textbox (. (awful.screen.focused)
+                                                                                      :mypromptbox
+                                                                                      :widget)})
                                                       {:description "lua execute prompt"
                                                        :group :awesome})
                                            (awful.key [modkey] :Return
-                                                      (fn []
-                                                        (awful.spawn terminal))
+                                                      #(awful.spawn terminal)
                                                       {:description "open a terminal"
                                                        :group :launcher})
                                            (awful.key [modkey] :r
@@ -404,13 +406,11 @@
                                                       {:description "go back"
                                                        :group :tag})])
 (awful.keyboard.append_global_keybindings [(awful.key [modkey] :j
-                                                      (fn []
-                                                        (awful.client.focus.byidx 1))
+                                                      #(awful.client.focus.byidx 1)
                                                       {:description "focus next by index"
                                                        :group :client})
                                            (awful.key [modkey] :k
-                                                      (fn []
-                                                        (awful.client.focus.byidx (- 1)))
+                                                      #(awful.client.focus.byidx (- 1))
                                                       {:description "focus previous by index"
                                                        :group :client})
                                            (awful.key [modkey] :Tab
@@ -418,28 +418,149 @@
                                                         (awful.client.focus.history.previous)
                                                         (when client.focus
                                                           (client.focus:raise)))
+                                                      ;; #(when (do ((awful.client.focus.history.previous)
+                                                      ;;             client.focus))
+                                                      ;;    (client.focus:raise))
                                                       {:description "go back"
                                                        :group :client})
                                            (awful.key [modkey :Control] :j
-                                                      (fn []
-                                                        (awful.screen.focus_relative 1))
+                                                      #(awful.screen.focus_relative 1)
                                                       {:description "focus the next screen"
                                                        :group :screen})
                                            (awful.key [modkey :Control] :k
-                                                      (fn []
-                                                        (awful.screen.focus_relative (- 1)))
+                                                      #(awful.screen.focus_relative (- 1))
                                                       {:description "focus the previous screen"
                                                        :group :screen})
                                            (awful.key [modkey :Control] :n
-                                                      (fn []
-                                                        (let [c (awful.client.restore)]
-                                                          (when c
-                                                            (c:activate {:context :key.unminimize
-                                                                         :raise true}))))
+                                                      #(when-let [[c (awful.client.restore)]]
+                                                                 (c:activate {:context :key.unminimize
+                                                                              :raise true}))
                                                       {:description "restore minimized"
-                                                       :group :client})])
+                                                       :group :client})
+                                           ])
 
- ;; {:fnlisloaded 1}
+;; newest batch
+(awful.keyboard.append_global_keybindings [(awful.key [modkey :Shift] :j
+                                                      #(awful.client.swap.byidx 1)
+                                                      {:description "swap with next client by index"
+                                                       :group :client})
+                                           (awful.key [modkey :Shift] :k
+                                                      (fn []
+                                                        (awful.client.swap.byidx (- 1)))
+                                                      {:description "swap with previous client by index"
+                                                       :group :client})
+                                           (awful.key [modkey] :u
+                                                      awful.client.urgent.jumpto
+                                                      {:description "jump to urgent client"
+                                                       :group :client})
+                                           (awful.key [modkey] :l
+                                                      #(awful.tag.incmwfact 0.05)
+                                                      {:description "increase master width factor"
+                                                       :group :layout})
+                                           (awful.key [modkey] :h
+                                                      #(awful.tag.incmwfact (- 0.05))
+                                                      {:description "decrease master width factor"
+                                                       :group :layout})
+                                           (awful.key [modkey :Shift] :h
+                                                      #(awful.tag.incnmaster 1
+                                                                             nil
+                                                                             true)
+                                                      {:description "increase the number of master clients"
+                                                       :group :layout})
+                                           (awful.key [modkey :Shift] :l
+                                                      #(awful.tag.incnmaster (- 1)
+                                                                            nil
+                                                                            true)
+                                                      {:description "decrease the number of master clients"
+                                                       :group :layout})
+                                           (awful.key [modkey :Control] :h
+                                                      (fn []
+                                                        (awful.tag.incncol 1
+                                                                           nil
+                                                                           true))
+                                                      {:description "increase the number of columns"
+                                                       :group :layout})
+                                           (awful.key [modkey :Control] :l
+                                                      (fn []
+                                                        (awful.tag.incncol (- 1)
+                                                                           nil
+                                                                           true))
+                                                      {:description "decrease the number of columns"
+                                                       :group :layout})
+                                           (awful.key [modkey] :space
+                                                      (fn []
+                                                        (awful.layout.inc 1))
+                                                      {:description "select next"
+                                                       :group :layout})
+                                           (awful.key [modkey :Shift] :space
+                                                      (fn []
+                                                        (awful.layout.inc (- 1)))
+                                                      {:description "select previous"
+                                                       :group :layout})]))
 
- ;; (set beautiful.wallpaper beautiful.themes_path.."default/background.jpg")
- )
+(awful.keyboard.append_global_keybindings [(awful.key {:description "only view tag"
+                                                       :group :tag
+                                                       :keygroup :numrow
+                                                       :modifiers [modkey]
+                                                       :on_press (fn [index]
+                                                                   (local screen
+                                                                          (awful.screen.focused))
+                                                                   (local tag
+                                                                          (. screen.tags
+                                                                             index))
+                                                                   (when tag
+                                                                     (tag:view_only)))})
+                                           (awful.key {:description "toggle tag"
+                                                       :group :tag
+                                                       :keygroup :numrow
+                                                       :modifiers [modkey
+                                                                   :Control]
+                                                       :on_press (fn [index]
+                                                                   (local screen
+                                                                          (awful.screen.focused))
+                                                                   (local tag
+                                                                          (. screen.tags
+                                                                             index))
+                                                                   (when tag
+                                                                     (awful.tag.viewtoggle tag)))})
+                                           (awful.key {:description "move focused client to tag"
+                                                       :group :tag
+                                                       :keygroup :numrow
+                                                       :modifiers [modkey
+                                                                   :Shift]
+                                                       :on_press (fn [index]
+                                                                   (when client.focus
+                                                                     (local tag
+                                                                            (. client.focus.screen.tags
+                                                                               index))
+                                                                     (when tag
+                                                                       (client.focus:move_to_tag tag))))})
+                                           (awful.key {:description "toggle focused client on tag"
+                                                       :group :tag
+                                                       :keygroup :numrow
+                                                       :modifiers [modkey
+                                                                   :Control
+                                                                   :Shift]
+                                                       :on_press (fn [index]
+                                                                   (when client.focus
+                                                                     (local tag
+                                                                            (. client.focus.screen.tags
+                                                                               index))
+                                                                     (when tag
+                                                                       (client.focus:toggle_tag tag))))})
+                                           (awful.key {:description "select layout directly"
+                                                       :group :layout
+                                                       :keygroup :numpad
+                                                       :modifiers [modkey]
+                                                       :on_press (fn [index]
+                                                                   (local t
+                                                                          (. (awful.screen.focused)
+                                                                             :selected_tag))
+                                                                   (when t
+                                                                     (set t.layout
+                                                                          (or (. t.layouts
+                                                                                 index)
+                                                                              t.layout))))})])
+
+;; {:fnlisloaded 1}
+;; (set beautiful.wallpaper beautiful.themes_path.."default/background.jpg")
