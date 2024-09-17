@@ -153,7 +153,16 @@
             (let* ,(cdr bindings) ,body ,rest)))))
 
 ;; when-let*
-(macro when-let* [bindings conditional body]
+(macro when-let* [bindings body]
+  (let [empty? #(if (= nil (next $)) true false)
+        car #(. $ 1)
+        cdr (fn [lst] (icollect [i v (ipairs lst)] (if (not= 1 i) v)))]
+    (if (empty? bindings)
+        `(let ,(car bindings)
+              (when ,(car (car bindings))
+                    (when-let* ,(cdr bindings) ,body))))))
+;; when-let*-when
+(macro when-let*-when [bindings conditional body]
   (let [empty? #(if (= nil (next $)) true false)
         car #(. $ 1)
         cdr (fn [lst] (icollect [i v (ipairs lst)] (if (not= 1 i) v)))]
@@ -161,7 +170,7 @@
         `(when ,conditional ,body)
         `(let ,(car bindings)
               (when ,(car (car bindings))
-                    (when-let* ,(cdr bindings) ,conditional ,body))))))
+                    (when-let*-when ,(cdr bindings) ,conditional ,body))))))
 
 ;; (macrodebug (when-let* [[x 1] [y 2]] (> y x) "ok"))
 ;; (when-let* [[x 1] [y 2]] (> y x) "ok")
@@ -242,3 +251,26 @@
 ;;   (print (table.remove t)) ; prints "last"
 ;;   (table.remove t 1) ; t is now ["a" 2 3]
 ;;   (print (table.concat t ", "))) 
+
+;;,-------------
+;;| Screen Setup
+;;`-------------
+;; Get list of video outputs / screens / displays from xrandr.
+(fn list-video-outputs []
+  (when-let [outputs {}
+             xrandr (io.popen "xrandr -q --current")]
+            (each [line (xrandr:lines)]
+              (when-let [output (line:match "(^[%w-]+) connected")]
+                        output
+                        (tset outputs (+ (length outputs) 1) output)))
+            (xrandr:close)
+            outputs))
+;; Setup triple Display Port setup only when we detect 3 screens
+;; Otherwise, this will all shortcircuit to nils & we do nothing.
+(when-let* [[xrandr-screens (list-video-outputs)]
+            [screen-count (length xrandr-screens)]
+            [screen-layouts-path "$HOME/.screenlayout/"]
+            [screen-layout "tredphdmi.sh"]
+            [screen-layout-script (.. screen-layouts-path screen-layout)]]
+           (when (= screen-count 3)
+             (awful.spawn.with_shell screen-layout-script)))
