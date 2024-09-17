@@ -29,25 +29,7 @@
 ;; TODO: figure out how to put stuff in fennel's path
 ;; For now, just include the macros.
 (macro when-let [bindings & body]
-  "Bind `bindings` and execute `body`, short-circuiting on `nil`.
-
-  This macro combines `when` and `let`.  It takes a list of bindings
-  and binds them like `let` before executing `body`, but if any
-  binding's value evaluates to `nil`, then `nil` is returned.
-
-  Examples:
-
-  > (when-let [[a 1]
-               [b 2]]
-      (print a b))
-   1        2
-   >>
-  > (when-let [[a nil]
-               [b 2])
-      (print a b))
-    nil
-    >>
-"
+  "Bind `bindings` and execute `body`, short-circuiting on `nil`."
   (let [map (fn [func lst]
               (icollect [_ val (ipairs lst)]
                 (func val)))
