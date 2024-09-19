@@ -483,13 +483,10 @@
                     :keygroup :numrow
                     :modifiers [modkey]
                     :on_press (fn [index]
-                                (local screen
-                                       (awful.screen.focused))
-                                (local tag
-                                       (. screen.tags
-                                          index))
-                                (when tag
-                                  (tag:view_only)))})
+                                (let [screen (awful.screen.focused)
+                                      tag (. screen.tags index)]
+                                  (when tag
+                                    (tag:view_only))))})
         (awful.key {:description "toggle tag"
                     :group :tag
                     :keygroup :numrow
