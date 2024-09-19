@@ -483,23 +483,18 @@
                     :keygroup :numrow
                     :modifiers [modkey]
                     :on_press (fn [index]
-                                (let [screen (awful.screen.focused)
-                                      tag (. screen.tags index)]
-                                  (when tag
-                                    (tag:view_only))))})
+                                (when-let [[screen (awful.screen.focused)]
+                                           [tag (. screen.tags index)]]
+                                          (tag:view_only)))})
         (awful.key {:description "toggle tag"
                     :group :tag
                     :keygroup :numrow
                     :modifiers [modkey
                                 :Control]
                     :on_press (fn [index]
-                                (local screen
-                                       (awful.screen.focused))
-                                (local tag
-                                       (. screen.tags
-                                          index))
-                                (when tag
-                                  (awful.tag.viewtoggle tag)))})
+                                (when-let [[screen (awful.screen.focused)]
+                                           [tag (. screen.tags index)]]
+                                          (awful.tag.viewtoggle tag)))})
         (awful.key {:description "move focused client to tag"
                     :group :tag
                     :keygroup :numrow
@@ -507,10 +502,7 @@
                                 :Shift]
                     :on_press (fn [index]
                                 (when client.focus
-                                  (local tag
-                                         (. client.focus.screen.tags
-                                            index))
-                                  (when tag
+                                  (let [tag (. client.focus.screen.tags index)]
                                     (client.focus:move_to_tag tag))))})
         (awful.key {:description "toggle focused client on tag"
                     :group :tag
@@ -520,24 +512,16 @@
                                 :Shift]
                     :on_press (fn [index]
                                 (when client.focus
-                                  (local tag
-                                         (. client.focus.screen.tags
-                                            index))
-                                  (when tag
+                                  (let [tag (. client.focus.screen.tags index)]
                                     (client.focus:toggle_tag tag))))})
         (awful.key {:description "select layout directly"
                     :group :layout
                     :keygroup :numpad
                     :modifiers [modkey]
                     :on_press (fn [index]
-                                (local t
-                                       (. (awful.screen.focused)
-                                          :selected_tag))
-                                (when t
-                                  (set t.layout
-                                       (or (. t.layouts
-                                              index)
-                                           t.layout))))})])
+                                (when-let [[t (. (awful.screen.focused) :selected_tag)]]
+                                          (set t.layout (or (. t.layouts index)
+                                                            t.layout))))})])
 
 ;; {:fnlisloaded 1}
 ;; (set beautiful.wallpaper beautiful.themes_path.."default/background.jpg")
