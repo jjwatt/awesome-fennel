@@ -430,8 +430,7 @@
                    {:description "swap with next client by index"
                     :group :client})
         (awful.key [modkey :Shift] :k
-                   (fn []
-                     (awful.client.swap.byidx (- 1)))
+                   #(awful.client.swap.byidx (- 1))
                    {:description "swap with previous client by index"
                     :group :client})
         (awful.key [modkey] :u
@@ -459,27 +458,23 @@
                    {:description "decrease the number of master clients"
                     :group :layout})
         (awful.key [modkey :Control] :h
-                   (fn []
-                     (awful.tag.incncol 1
-                                        nil
-                                        true))
+                   #(awful.tag.incncol 1
+                                       nil
+                                       true)
                    {:description "increase the number of columns"
                     :group :layout})
         (awful.key [modkey :Control] :l
-                   (fn []
-                     (awful.tag.incncol (- 1)
-                                        nil
-                                        true))
+                   #(awful.tag.incncol (- 1)
+                                      nil
+                                      true)
                    {:description "decrease the number of columns"
                     :group :layout})
         (awful.key [modkey] :space
-                   (fn []
-                     (awful.layout.inc 1))
+                   #(awful.layout.inc 1)
                    {:description "select next"
                     :group :layout})
         (awful.key [modkey :Shift] :space
-                   (fn []
-                     (awful.layout.inc (- 1)))
+                   #(awful.layout.inc (- 1))
                    {:description "select previous"
                     :group :layout})]))
 
